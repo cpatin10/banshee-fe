@@ -6,8 +6,7 @@ class ListCustomersComponent extends Component {
     constructor(props) {
         super(props)
         this.state = {
-            customers: [],
-            message: null
+            customers: []
         }
         this.refreshCustomers = this.refreshCustomers.bind(this)
         this.deleteCustomerClicked = this.deleteCustomerClicked.bind(this)
@@ -32,7 +31,6 @@ class ListCustomersComponent extends Component {
         CustomerDataService.deleteCustomer(id)
             .then(
                 response => {
-                    console.log('delete ' + id)
                     this.setState({ message: `Customer successfully deleted` })
                     this.refreshCustomers()
                 }
@@ -41,7 +39,6 @@ class ListCustomersComponent extends Component {
     }
 
     updateCustomerClicked(id) {
-        console.log('update ' + id)
         this.props.history.push(`/customers/${id}`)
     }
 
