@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Formik, Form, Field } from 'formik';
+import { Formik, Form, Field, ErrorMessage } from 'formik';
 import CustomerDataService from '../service/CustomerDataService';
 import * as yup from 'yup';
 import VisitDataService from '../service/VisitDataService';
@@ -91,12 +91,14 @@ class CustomerComponent extends Component {
             country: '',
             state: '',
             city: '',
-            visits: []
+            visits: [],
+            message: ''
         }
         this.onCustomerSubmit = this.onCustomerSubmit.bind(this)
         this.loadCustomer = this.loadCustomer.bind(this)
         this.onVisitSubmit = this.onVisitSubmit.bind(this)
         this.deleteVisitClicked = this.deleteVisitClicked.bind(this)
+        this.manageResponse = this.manageResponse.bind(this)
     }
 
     componentDidMount() {
@@ -145,13 +147,16 @@ class CustomerComponent extends Component {
                 country: values.country
             }
         }
-
         if (this.state.id == -1) {
             CustomerDataService.createCustomer(customer)
-                .then(response => this.loadCustomer())
+                .then(response =>
+                    this.manageResponse(response, 'Customer was sucessfully created')
+                ).catch(error => this.setState({ message: 'Could not create customer: ' + error.message }))
         } else {
             CustomerDataService.updateCustomer(this.state.id, customer)
-                .then(response => this.loadCustomer())
+                .then(response =>
+                    this.manageResponse(response, 'Customer was sucessfully updated')
+                ).catch(error => this.setState({ message: 'Could not update customer: ' + error.message }))
         }
     }
 
@@ -165,11 +170,21 @@ class CustomerComponent extends Component {
         }
         if (values.id == -1) {
             VisitDataService.createVisit(visit)
-                .then(response => this.loadCustomer())
+                .then(response =>
+                    this.manageResponse(response, 'Visit was sucessfully created')
+                ).catch(error => this.setState({ message: 'Could not create visit: ' + error.message }))
         } else {
             VisitDataService.updateVisit(values.id, visit)
-                .then(response => this.loadCustomer())
+                .then(response =>
+                    this.manageResponse(response, 'Visit was sucessfully updated')
+                ).catch(error => this.setState({ message: 'Could not update visit: ' + error.message }))
         }
+    }
+
+    manageResponse(response, message) {
+        console.log(response)
+        this.setState({ message: message })
+        this.loadCustomer()
     }
 
     deleteVisitClicked(visitId) {
@@ -192,6 +207,7 @@ class CustomerComponent extends Component {
         return (
             <div>
                 <h3>Customer Details</h3>
+                {this.state.message && <div className="alert alert-warning">{this.state.message}</div>}
                 <div className="container">
                     <Formik
                         enableReinitialize={true}
