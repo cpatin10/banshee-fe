@@ -99,6 +99,7 @@ class CustomerComponent extends Component {
         this.onVisitSubmit = this.onVisitSubmit.bind(this)
         this.deleteVisitClicked = this.deleteVisitClicked.bind(this)
         this.manageResponse = this.manageResponse.bind(this)
+        this.manageError = this.manageError.bind(this)
     }
 
     componentDidMount() {
@@ -151,12 +152,14 @@ class CustomerComponent extends Component {
             CustomerDataService.createCustomer(customer)
                 .then(response =>
                     this.manageResponse(response, 'Customer was sucessfully created')
-                ).catch(error => this.setState({ message: 'Could not create customer: ' + error.message }))
+                ).catch(error => this.manageError(error, 'Could not create customer: '))
         } else {
             CustomerDataService.updateCustomer(this.state.id, customer)
                 .then(response =>
                     this.manageResponse(response, 'Customer was sucessfully updated')
-                ).catch(error => this.setState({ message: 'Could not update customer: ' + error.message }))
+                ).catch(error => {
+                    this.manageError(error, 'Could not update customer: ')
+                })
         }
     }
 
@@ -172,12 +175,12 @@ class CustomerComponent extends Component {
             VisitDataService.createVisit(visit)
                 .then(response =>
                     this.manageResponse(response, 'Visit was sucessfully created')
-                ).catch(error => this.setState({ message: 'Could not create visit: ' + error.message }))
+                ).catch(error => this.manageError(error, 'Could not create visit: '))
         } else {
             VisitDataService.updateVisit(values.id, visit)
                 .then(response =>
                     this.manageResponse(response, 'Visit was sucessfully updated')
-                ).catch(error => this.setState({ message: 'Could not update visit: ' + error.message }))
+                ).catch(error => this.manageError(error, 'Could not update visit: '))
         }
     }
 
@@ -185,6 +188,19 @@ class CustomerComponent extends Component {
         console.log(response)
         this.setState({ message: message })
         this.loadCustomer()
+        window.scrollTo(0, 0)
+    }
+
+    manageError(error, messagePrefix) {
+        let messageSuffix
+        if (error.response) {
+            console.log(error.response)
+            messageSuffix = error.response.data.message
+        } else {
+            messageSuffix = "Something went wrong. We are working on it. please try again later."
+        }
+        this.setState({ message: messagePrefix + messageSuffix })
+        window.scrollTo(0, 0)
     }
 
     deleteVisitClicked(visitId) {
@@ -253,21 +269,33 @@ class CustomerComponent extends Component {
                                     </fieldset>
                                     <fieldset className="form-group">
                                         <label>Country</label>
-                                        <Field name="country" className="form-control" type="text" />
+                                        <Field as="select" name="country" className="form-control">
+                                            <option value="">Select country</option>
+                                            <option value="Colombia">Colombia</option>
+                                            <option value="United States">United States</option>
+                                        </Field>
                                         {errors.country && touched.country ? (
                                             <div>{errors.country}</div>
                                         ) : null}
                                     </fieldset>
                                     <fieldset className="form-group">
                                         <label>State</label>
-                                        <Field name="state" className="form-control" type="text" />
+                                        <Field as="select" name="state" className="form-control">
+                                            <option value="">Select state</option>
+                                            <option value="Antioquia">Antioquia</option>
+                                            <option value="Florida">Florida</option>
+                                        </Field>
                                         {errors.state && touched.state ? (
                                             <div>{errors.state}</div>
                                         ) : null}
                                     </fieldset>
                                     <fieldset className="form-group">
                                         <label>City</label>
-                                        <Field name="city" className="form-control" type="text" />
+                                        <Field as="select" name="city" className="form-control">
+                                            <option value="">Select city</option>
+                                            <option value="Medellin">Medellin</option>
+                                            <option value="Miami">Miami</option>
+                                        </Field>
                                         {errors.city && touched.city ? (
                                             <div>{errors.city}</div>
                                         ) : null}
