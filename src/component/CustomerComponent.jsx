@@ -3,6 +3,7 @@ import { Formik, Form, Field, ErrorMessage } from 'formik';
 import CustomerDataService from '../service/CustomerDataService';
 import * as yup from 'yup';
 import VisitDataService from '../service/VisitDataService';
+import moment from 'moment';
 
 const customerValidationSchema = yup.object().shape({
     nit: yup
@@ -59,7 +60,7 @@ const visitValidationSchema = yup.object().shape({
     date: yup
         .date()
         .required('Please enter the date')
-        .label('Nit'),
+        .label('Date'),
     net: yup
         .number()
         .min(0, "Visit percentage must be equals or greater than 0")
@@ -123,7 +124,7 @@ class CustomerComponent extends Component {
                     phone: response.data.phone,
                     creditLimit: response.data.creditLimit,
                     availableCredit: response.data.availableCredit,
-                    visitPercentage: response.data.visitPercentage,
+                    visitPercentage: response.data.visitPercentage * 100,
                     visits: response.data.visits
                 })
             })
@@ -141,7 +142,7 @@ class CustomerComponent extends Component {
             phone: values.phone,
             creditLimit: values.creditLimit,
             availableCredit: values.availableCredit,
-            visitPercentage: values.visitPercentage,
+            visitPercentage: values.visitPercentage / 100,
             location: {
                 city: values.city,
                 state: values.state,
@@ -166,7 +167,7 @@ class CustomerComponent extends Component {
     onVisitSubmit(values) {
         let visit = {
             customerId: this.state.id,
-            date: values.date,
+            date: moment(values.date).toISOString(),
             net: values.net,
             description: values.description,
             salesRepresentativeIdNumber: values.salesRepresentativeIdentification,
@@ -182,6 +183,11 @@ class CustomerComponent extends Component {
                     this.manageResponse(response, 'Visit was sucessfully updated')
                 ).catch(error => this.manageError(error, 'Could not update visit: '))
         }
+    }
+
+    deleteVisitClicked(visitId) {
+        VisitDataService.deleteVisit(visitId)
+            .then(response => this.loadCustomer())
     }
 
     manageResponse(response, message) {
@@ -201,11 +207,6 @@ class CustomerComponent extends Component {
         }
         this.setState({ message: messagePrefix + messageSuffix })
         window.scrollTo(0, 0)
-    }
-
-    deleteVisitClicked(visitId) {
-        VisitDataService.deleteVisit(visitId)
-            .then(response => this.loadCustomer())
     }
 
     render() {
@@ -229,7 +230,7 @@ class CustomerComponent extends Component {
                         enableReinitialize={true}
                         initialValues={{
                             nit,
-                            fullName,
+                            fullName: fullName,
                             address,
                             country,
                             state,
@@ -347,7 +348,7 @@ class CustomerComponent extends Component {
                                         enableReinitialize={true}
                                         initialValues={{
                                             id: visit.id,
-                                            date: visit.date,
+                                            date: moment(visit.date).format("MM/DD/YY HH:mm"),
                                             net: visit.net,
                                             visitTotal: visit.visitTotal,
                                             description: visit.description,
@@ -364,7 +365,7 @@ class CustomerComponent extends Component {
                                                     <br />
                                                     <br />
                                                     <fieldset className="form-group">
-                                                        <label>Date</label>
+                                                        <label>Date (MM/DD/YY HH:mm)</label>
                                                         <Field name="date" className="form-control" type="text" />
                                                         {errors.date && touched.date ? (
                                                             <div>{errors.date}</div>
